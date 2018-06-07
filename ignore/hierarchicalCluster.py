@@ -100,11 +100,7 @@ def hierarchical(sentenceVector):
     k = 3
     Cluster = AgglomerativeClustering(n_clusters=k, affinity='euclidean', linkage='ward', compute_full_tree='false')
     result = Cluster.fit_predict(sentenceVector)
-    #print(Cluster.labels_)
     print(result)
-    print(Cluster.n_leaves_)
-    print(Cluster.n_components_)
-    print(Cluster.children_)
 
 if __name__ == '__main__':
     keywordList = []
