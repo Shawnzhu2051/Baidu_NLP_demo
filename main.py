@@ -24,12 +24,12 @@ def getAccessToken():
     else:
         return False
 
-def lexer(AT,keywordList):
+def lexer(AT,pointList):
     print('Start lexer')
     lexer_url = 'https://aip.baidubce.com/rpc/2.0/nlp/v1/lexer' + '?charset=UTF-8&access_token=' + AT
     sentenceList = []
     count = 0
-    for items in keywordList:
+    for items in pointList:
         lexer_word = []
         info = {
             'text': items[0]
@@ -52,7 +52,6 @@ def lexer(AT,keywordList):
         count += 1
         print(count)
     print('lexer end')
-    #print(sentenceList)
     return sentenceList
 
 def word_vec(AT,lexeredPointList):
@@ -78,9 +77,7 @@ def word_vec(AT,lexeredPointList):
                     print('except:', e)
             response = json.loads(response.content)
             if(response.has_key('vec')):
-                #print(response['word'])
                 sentence_vec = vector_sum(sentence_vec,response['vec'])
-            #print(sentence_vec)
         vectorList.append(normalization(sentence_vec))
         print(count)
         count += 1
@@ -120,15 +117,12 @@ def hierarchical(pointList,sentenceVector):
             label1List.append(pointList[index])
         elif (result[index] == 2):
             label2List.append(pointList[index])
-        #print((pointList[index],result[index]))
     print('End cluster')
     return computeAveFindMax(label0List,label1List,label2List)
 
 def getScore(point,AT):
     url = 'https://aip.baidubce.com/rpc/2.0/nlp/v2/simnet' + '?charset=UTF-8&access_token='
     question = "一辆汽车刹车后做匀减速运动，初速度为10m/s，加速度大小为2m/s，则汽车在6s末的速度和位移分别为"
-    #print(chardet.detect(point))
-    #print(chardet.detect(question))
     info = {
         "text_1": question,
         "text_2": point
@@ -136,13 +130,14 @@ def getScore(point,AT):
     dic_info = json.dumps(info)
     request_url = url + AT
     headers = {'Content-Type': 'application/json'}
-
-    try:
-        response = requests.post(url=request_url, headers=headers, data=dic_info, timeout=10)
-    except requests.exceptions.ReadTimeout as e:
-        print('except:', e)
-    except requests.exceptions.ConnectTimeout as e:
-        print('except:', e)
+    while(1):
+        try:
+            response = requests.post(url=request_url, headers=headers, data=dic_info, timeout=10)
+            break
+        except requests.exceptions.ReadTimeout as e:
+            print('except:', e)
+        except requests.exceptions.ConnectTimeout as e:
+            print('except:', e)
     response = json.loads(response.content)
     if response.has_key('score'):
         return response['score']
